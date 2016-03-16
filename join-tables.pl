@@ -57,6 +57,7 @@ my ($opt, $usage) = describe_options(
 	['key-as=s@',
 		'Name for output columns of keys. '.
 		'Must be provided equal number of times as key1, key2.'],
+	['exclude-duplicates', 'if the key is present multiple times then only the first instance is used'],
 	['verbose|v', 'Print progress'],
 	['help|h', 'Print usage and exit',
 		{shortcircuit => 1}],
@@ -74,7 +75,9 @@ chomp $header2;
 warn "validating key name parameters\n" if $opt->verbose;
 if (!defined $opt->key2) {
 	$opt->{"key2"} = $opt->key1;
-	$opt->{"key_as"} = $opt->key1;
+	if (!defined $opt->key_as){
+		$opt->{"key_as"} = $opt->key1;
+	}
 }
 elsif (!defined $opt->key_as) {
 	print STDERR "Error: if key2 provided, key-as must be provided.\n";
@@ -119,11 +122,11 @@ if (defined $opt->suffix2) {
 }
 
 warn "reading table 1\n" if $opt->verbose;
-my $data1 = read_table($IN1, $header1, $opt->key1, $opt->value1);
+my $data1 = read_table($IN1, $header1, $opt->key1, $opt->value1, $opt->exclude_duplicates);
 close $IN1;
 
 warn "reading table 2\n" if $opt->verbose;
-my $data2 = read_table($IN2, $header2, $opt->key2, $opt->value2);
+my $data2 = read_table($IN2, $header2, $opt->key2, $opt->value2, $opt->exclude_duplicates);
 close $IN2;
 
 warn "joining tables\n" if $opt->verbose;
@@ -211,7 +214,7 @@ sub filehandle_for {
 }
 
 sub read_table {
-	my ($IN, $header, $key_names, $value_names) = @_;
+	my ($IN, $header, $key_names, $value_names, $excludeduplicates) = @_;
 	
 	my $sep = "\t";
 	my @colnames = split(/$sep/, $header);
@@ -230,12 +233,15 @@ sub read_table {
 	}
 	
 	my %data;
-	while (my $line = $IN->getline) {
+	LINE: while (my $line = $IN->getline) {
 		chomp $line;
 		my @splitline = split(/$sep/, $line);
 		my $key = join($sep, @splitline[@key_indices]);
 		if (exists $data{$key}) {
-			die "Error: duplicate key $key found\n";
+			if ($excludeduplicates){next LINE;}
+			else {
+				die "Error: duplicate key $key found\n";
+			}
 		}
 		$data{$key} = [@splitline[@val_indices]];
 	}
