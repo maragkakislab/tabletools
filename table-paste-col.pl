@@ -9,8 +9,10 @@ my ($opt, $usage) = describe_options(
 	"Usage: %c %o",
 	["Print the input table adding a new column with a constant value."],
 	[],
+	['table=s',
+		'Input tab separated table file. Reads from STDIN if -'],
 	['ifile=s',
-		'Input file name. Reads from STDIN if -', {required => 1}],
+		'Input file name. Reads from STDIN if -', {hidden => 1}], # for backwards compatibility
 	['col-name=s',
 		'Name for new column. Assumes input file already has a header line'],
 	['col-val=s',
@@ -22,7 +24,18 @@ print($usage->text), exit if $opt->help;
 
 my $delim = "\t";
 
-my $IN = filehandle_for($opt->ifile);
+if (defined $opt->ifile) {
+	if (!defined $opt->table) {
+		$opt->{'table'} = $opt->ifile
+	} else {
+		die "Cannot specify both \'table\' and \'ifile\' parameters\n";
+	}
+}
+if (!defined $opt->table) {
+	die "Mandatory parameter \'table\' missing\n";
+}
+
+my $IN = filehandle_for($opt->table);
 
 if (defined $opt->col_name) {
 	my $header = $IN->getline();
