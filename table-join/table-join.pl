@@ -3,64 +3,34 @@
 use Modern::Perl;
 use autodie;
 use Getopt::Long::Descriptive;
+use IO::File;
 
 # Define and read command line options
 my ($opt, $usage) = describe_options(
 	"Usage: %c %o",
-	["Join 2 tables based on key columns. The output table will"],
-	["have the key columns plus value columns from each of the tables."],
-	["Value columns will be named based on the -value1-as and -value2-as option in the same"],
-	["order as the -table option."],
+	["Join the columns of two tables based on given key columns. Assumes that the input file has a header line with column names."],
 	[],
 	['type' => hidden => { one_of => [
-			[ 'inner' => 'inner join (default)' ],
-			[ 'left' => 'left join' ],
-			[ 'right' => 'right join' ],
-			[ 'full' => 'full join' ],
+			[ 'inner' => 'Perform inner join (default)' ],
+			[ 'left' => 'Perform left join' ],
+			[ 'right' => 'Perform right join' ],
+			[ 'full' => 'Perform full join' ],
 		], default => 'inner' }
 	],
-	['table1=s',
-		'TSV file. Use - for STDIN',
-		{ required => 1}],
-	['key1=s@',
-		'Key column name for table 1. '.
-		'If given multiple times a composite key is used.',
-		{ required => 1}],
-	['value1=s@',
-		'Value column names for table 1 - can be given multiple times',
-	],
-	['value1-as=s@',
-		'Name of the value columns of table 1 in the output. '.
-		'Must be given as many times as the -value1 option.',
-	],
-	['suffix1=s',
-		'Suffix to be added to value1 column names'
-	],
-	['table2=s',
-		'TSV file.',
-		{ required => 1}],
-	['key2=s@',
-		'Key column name for table 2. '.
-		'If given multiple times a composite key is used. '.
-		'If not provided, key1 is used. '.
-		'If provided, key-as must be provided.'],
-	['value2=s@',
-		'Value column names for table 2 - can be given multiple times.',
-	],
-	['value2-as=s@',
-		'Name of the value columns of table 2 in the output. '.
-		'Must be given as many times as the -value2 option.',
-	],
-	['suffix2=s',
-		'Suffix to be added to value2 column names'
-	],
-	['key-as=s@',
-		'Name for output columns of keys. '.
-		'Must be provided equal number of times as key1, key2.'],
-	['exclude-duplicates', 'if the key is present multiple times then only the first instance is used'],
+	['table1=s', 'Input table file; reads from STDIN if "-"', {required => 1}],
+	['key1=s@', 'Key column name for table 1; creates a composite key if given multiple times', { required => 1}],
+	['value1=s@', 'Value column names for table 1; can be given multiple times; if not provided all non key1 columns are selected', ],
+	['value1-as=s@', 'Optional name of the value columns of table 1 in the output; must be given as many times as the -value1 option'],
+	['suffix1=s', 'Optional suffix to be added to value1 column names' ],
+	['table2=s', 'Input table file; reads from STDIN if "-"', {required => 1}],
+	['key2=s@', 'Key column name for table 2; creates a composite key if given multiple times; if not provided, key1 is used; if provided, key-as must be provided'],
+	['value2=s@', 'Value column names for table 2; can be given multiple times; if not provided all non key2 columns are selected'],
+	['value2-as=s@', 'Optional name of the value columns of table 2 in the output; must be given as many times as the -value2 option'],
+	['suffix2=s', 'Optinal suffix to be added to value2 column names' ],
+	['key-as=s@', 'Optional name for output key columns; must be provided equal number of times as key1, key2'],
+	['exclude-duplicates', 'Use only first instance found if same key is found multiple times'],
 	['verbose|v', 'Print progress'],
-	['help|h', 'Print usage and exit',
-		{shortcircuit => 1}],
+	['help|h', 'Print usage and exit', {shortcircuit => 1}],
 );
 print($usage->text), exit if $opt->help;
 
@@ -184,10 +154,10 @@ exit;
 
 sub extract_all_value_columns_from_header {
 	my ($header, $key_names) = @_;
-	
+
 	my $sep = "\t";
 	my @colnames = split(/$sep/, $header);
-	
+
 	my @val_names;
 	COLNAME: foreach my $colname (@colnames) {
 		foreach my $key (@{$key_names}) {
@@ -195,27 +165,14 @@ sub extract_all_value_columns_from_header {
 				next COLNAME;
 			}
 		}
-		push @val_names, $colname; 
+		push @val_names, $colname;
 	}
 	return \@val_names;
 }
 
-sub filehandle_for {
-	my ($file) = @_;
-
-	if ($file eq '-'){
-		open(my $IN, "<-");
-		return $IN;
-	}
-	else {
-		open(my $IN, "<", $file);
-		return $IN
-	}
-}
-
 sub read_table {
 	my ($IN, $header, $key_names, $value_names, $excludeduplicates) = @_;
-	
+
 	my $sep = "\t";
 	my @colnames = split(/$sep/, $header);
 
@@ -231,14 +188,16 @@ sub read_table {
 		die "Error: cannot find column $value_name\n" if not defined $idx;
 		push @val_indices, $idx;
 	}
-	
+
 	my %data;
 	LINE: while (my $line = $IN->getline) {
 		chomp $line;
 		my @splitline = split(/$sep/, $line);
 		my $key = join($sep, @splitline[@key_indices]);
 		if (exists $data{$key}) {
-			if ($excludeduplicates){next LINE;}
+			if ($excludeduplicates){
+				next LINE;
+			}
 			else {
 				die "Error: duplicate key $key found\n";
 			}
@@ -249,11 +208,21 @@ sub read_table {
 	return \%data;
 }
 
+sub filehandle_for {
+	my ($file) = @_;
+
+	if ($file eq '-'){
+		return IO::File->new("<-");
+	}
+	else {
+		return IO::File->new($file, "<");
+	}
+}
+
 sub column_name_to_idx {
 	my ($names, $name) = @_;
 
 	for (my $i=0; $i<@$names; $i++) {
 		return $i if $name eq $names->[$i];
 	}
-	return undef;
 }
