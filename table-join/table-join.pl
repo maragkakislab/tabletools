@@ -29,10 +29,13 @@ my ($opt, $usage) = describe_options(
 	['suffix2=s', 'Optinal suffix to be added to value2 column names' ],
 	['key-as=s@', 'Optional name for output key columns; must be provided equal number of times as key1, key2'],
 	['exclude-duplicates', 'Use only first instance found if same key is found multiple times'],
+	['sep=s', 'Column separator character [Default => "\t"]', {default => "\t"}],
 	['verbose|v', 'Print progress'],
 	['help|h', 'Print usage and exit', {shortcircuit => 1}],
 );
 print($usage->text), exit if $opt->help;
+
+my $sep = $opt->sep;
 
 warn "opening input tables\n" if $opt->verbose;
 my $IN1 = filehandle_for($opt->table1);
@@ -62,11 +65,11 @@ elsif (@{$opt->key1} != @{$opt->key2} or @{$opt->key1} != @{$opt->key_as}) {
 
 if (!defined $opt->value1) {
 	warn "guessing value columns for table1\n" if $opt->verbose;
-	$opt->{"value1"} = extract_all_value_columns_from_header($header1, $opt->key1);
+	$opt->{"value1"} = extract_all_value_columns_from_header($header1, $opt->key1, $sep);
 }
 if (!defined $opt->value2) {
 	warn "guessing value columns for table2\n" if $opt->verbose;
-	$opt->{"value2"} = extract_all_value_columns_from_header($header2, $opt->key2);
+	$opt->{"value2"} = extract_all_value_columns_from_header($header2, $opt->key2, $sep);
 }
 
 warn "validating value/name parameters\n" if $opt->verbose;
@@ -92,40 +95,40 @@ if (defined $opt->suffix2) {
 }
 
 warn "reading table 1\n" if $opt->verbose;
-my $data1 = read_table($IN1, $header1, $opt->key1, $opt->value1, $opt->exclude_duplicates);
+my $data1 = read_table($IN1, $header1, $opt->key1, $opt->value1, $opt->exclude_duplicates, $sep);
 close $IN1;
 
 warn "reading table 2\n" if $opt->verbose;
-my $data2 = read_table($IN2, $header2, $opt->key2, $opt->value2, $opt->exclude_duplicates);
+my $data2 = read_table($IN2, $header2, $opt->key2, $opt->value2, $opt->exclude_duplicates, $sep);
 close $IN2;
 
 warn "joining tables\n" if $opt->verbose;
-say join("\t", @{$opt->key_as}, @{$opt->value1_as}, @{$opt->value2_as});
+say join($sep, @{$opt->key_as}, @{$opt->value1_as}, @{$opt->value2_as});
 
 if ($opt->type eq 'inner'){ #only for keys that exist in both
 	foreach my $key (keys %{$data1}) {
 		if (exists $$data2{$key}){
-			say join("\t", $key, @{$data1->{$key}}, @{$data2->{$key}});
+			say join($sep, $key, @{$data1->{$key}}, @{$data2->{$key}});
 		}
 	}
 }
 elsif ($opt->type eq 'left'){ #for all lines on table 1
 	foreach my $key (keys %{$data1}) {
 		if (!exists $$data2{$key}){
-			say join("\t", $key, @{$data1->{$key}}, ("NA") x scalar(@{$opt->value2}));
+			say join($sep, $key, @{$data1->{$key}}, ("NA") x scalar(@{$opt->value2}));
 		}
 		else {
-			say join("\t", $key, @{$data1->{$key}}, @{$data2->{$key}});
+			say join($sep, $key, @{$data1->{$key}}, @{$data2->{$key}});
 		}
 	}
 }
 elsif ($opt->type eq 'right'){ #for all lines on table 1
 	foreach my $key (keys %{$data2}) {
 		if (!exists $$data1{$key}){
-			say join("\t", $key, ("NA") x scalar(@{$opt->value1}), @{$data2->{$key}});
+			say join($sep, $key, ("NA") x scalar(@{$opt->value1}), @{$data2->{$key}});
 		}
 		else {
-			say join("\t", $key, @{$data1->{$key}}, @{$data2->{$key}});
+			say join($sep, $key, @{$data1->{$key}}, @{$data2->{$key}});
 		}
 	}
 }
@@ -139,13 +142,13 @@ elsif ($opt->type eq 'full'){ #for all lines
 	}
 	foreach my $key (keys %allkeys){
 		if (!exists $$data1{$key}){
-			say join("\t", $key, ("NA") x scalar(@{$opt->value1}), @{$data2->{$key}});
+			say join($sep, $key, ("NA") x scalar(@{$opt->value1}), @{$data2->{$key}});
 		}
 		elsif (!exists $$data2{$key}){
-			say join("\t", $key, @{$data1->{$key}}, ("NA") x scalar(@{$opt->value2}));
+			say join($sep, $key, @{$data1->{$key}}, ("NA") x scalar(@{$opt->value2}));
 		}
 		else {
-			say join("\t", $key, @{$data1->{$key}}, @{$data2->{$key}});
+			say join($sep, $key, @{$data1->{$key}}, @{$data2->{$key}});
 		}
 	}
 }
@@ -153,9 +156,8 @@ elsif ($opt->type eq 'full'){ #for all lines
 exit;
 
 sub extract_all_value_columns_from_header {
-	my ($header, $key_names) = @_;
+	my ($header, $key_names, $sep) = @_;
 
-	my $sep = "\t";
 	my @colnames = split(/$sep/, $header);
 
 	my @val_names;
@@ -171,9 +173,8 @@ sub extract_all_value_columns_from_header {
 }
 
 sub read_table {
-	my ($IN, $header, $key_names, $value_names, $excludeduplicates) = @_;
+	my ($IN, $header, $key_names, $value_names, $excludeduplicates, $sep) = @_;
 
-	my $sep = "\t";
 	my @colnames = split(/$sep/, $header);
 
 	my @key_indices;
