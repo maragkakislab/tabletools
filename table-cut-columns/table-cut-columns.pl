@@ -13,6 +13,7 @@ my ($opt, $usage) = describe_options(
 	['table=s', 'Input table file. Reads from STDIN if "-"'],
 	['col-name=s@', 'Column name; selects multiple columns if used multiple times'],
 	['col=s@', 'Column name', {hidden => 1}], # for backwards compatibility
+	['col-name-as=s@', 'Optional output column name. Equal times and same order as col-name.'],
 	['sep=s', 'Column separator character [Default => "\t"]', {default => "\t"}],
 	['verbose|v', 'Print progress'],
 	['help|h', 'Print usage and exit', {shortcircuit => 1}],
@@ -30,6 +31,16 @@ if (!defined $opt->col_name) {
 	die "Mandatory parameter \'col-name\' missing\n";
 }
 
+my @out_col_names;
+if (defined $opt->col_name_as) {
+	if (@{$opt->col_name} != @{$opt->col_name_as}) {
+		print STDERR "Error: col-name and col-name-as must be given equal times.\n";
+		print($usage->text);
+		exit 1;
+	}
+	@out_col_names = @{$opt->col_name_as};
+}
+
 my $sep = $opt->sep;
 
 my $IN = filehandle_for($opt->table);
@@ -44,7 +55,10 @@ foreach my $col_name (@{$opt->col_name}) {
 	push @col_indices, $idx;
 }
 
-say join($sep, @colnames[@col_indices]);
+if (!defined $opt->col_name_as) {
+	@out_col_names = @colnames[@col_indices];
+}
+say join($sep, @out_col_names);
 while (my $line = $IN->getline) {
 	chomp $line;
 	my @splitline = split(/$sep/, $line);
