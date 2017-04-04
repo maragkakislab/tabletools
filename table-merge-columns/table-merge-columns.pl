@@ -78,12 +78,14 @@ sub value_in {
 sub filehandle_for {
 	my ($file) = @_;
 
+	my $f;
 	if ($file eq '-'){
-		return IO::File->new("<-");
+		$f = IO::File->new("<-") or die "cannot open stdin: $!\n";
 	}
 	else {
-		return IO::File->new($file, "<");
+		$f = IO::File->new($file, "<") or die "cannot open file $file: $!\n";
 	}
+	return $f;
 }
 
 sub column_name_to_idx {
