@@ -12,7 +12,7 @@ my ($opt, $usage) = describe_options(
 	[],
 	['table=s', 'Input table file; reads from STDIN if "-"'],
 	['ifile=s', 'Input file name; reads from STDIN if "-"', {hidden => 1}], # for backwards compatibility
-	['col-name=s', 'Name for new column', {required => 1}],
+	['col-name=s', 'Name for new column'],
 	['col-val=s', 'Value for new column', {required => 1}],
 	['sep=s', 'Column separator character [Default => "\t"]', {default => "\t"}],
 	['verbose|v', 'Print progress'],
