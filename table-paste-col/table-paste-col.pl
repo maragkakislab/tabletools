@@ -15,6 +15,7 @@ my ($opt, $usage) = describe_options(
 	['col-name=s', 'Name for new column'],
 	['col-val=s', 'Value for new column', {required => 1}],
 	['sep=s', 'Column separator character [Default => "\t"]', {default => "\t"}],
+	['at-end', 'Inserts new column as the right most one'],
 	['verbose|v', 'Print progress'],
 	['help|h', 'Print usage and exit', {shortcircuit => 1}],
 );
@@ -37,11 +38,21 @@ my $IN = filehandle_for($opt->table);
 
 if (defined $opt->col_name) {
 	my $header = $IN->getline();
-	print $opt->col_name . $sep . $header;
+	chomp($header);
+	if ($opt->at_end) {
+		print $header . $sep . $opt->col_name . "\n";
+	} else {
+		print $opt->col_name . $sep . $header . "\n";
+	}
 }
 
 while (my $line = $IN->getline) {
-	print $opt->col_val . $sep . $line;
+	chomp($line);
+	if ($opt->at_end) {
+		print $line . $sep . $opt->col_val . "\n";
+	} else {
+		print $opt->col_val . $sep . $line . "\n";
+	}
 }
 $IN->close();
 
