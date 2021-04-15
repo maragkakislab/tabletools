@@ -1,4 +1,4 @@
-#! usr/bin/env python
+#!/usr/bin/env python
 import sys
 import argparse 
 
@@ -10,7 +10,7 @@ def get_input_file_object(filename):
         return sys.stdin
     return open(filename, "r")
 
-parser = argparse.ArgumentParser(description= __doc__)
+parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("-t", "--table", default='-', help="input csv file; STDIN if - (default: %(default)s")
 parser.add_argument("-c", "--colname", help="name for new column")
 parser.add_argument("-v", "--colvalue", help="constant value for new column")
