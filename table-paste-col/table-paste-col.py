@@ -30,12 +30,14 @@ def add_col(sep, colname, colvalue, at_end):
             line = line.rstrip('\n')
             if at_end:
                 print(line + sep + colname)
-            print(colname + sep + line)
+            else:
+                print(colname + sep + line)
         else:
             line = line.rstrip('\n')
             if at_end:
                 print(line + sep + colvalue)
-            print(colvalue + sep + line)
+            else:
+                print(colvalue + sep + line)
         i += 1
 
     return
