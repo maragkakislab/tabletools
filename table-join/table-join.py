@@ -19,10 +19,10 @@ parser.add_argument("-c","--key1", nargs='+',
                     help = "Name(s) of column (headers) first table")
 parser.add_argument("-d","--key2", nargs='+',
                     help = "Name(s) of column (headers) second table")
-parser.add_argument("-x","--suffix1", default="x",
-                    help = "Suffix to add to overlapping column names,(default: %(default)s)")
-parser.add_argument("-y","--suffix2", default="y",
-                    help = "Suffix to add to overlapping column names,(default: %(default)s)")
+parser.add_argument("-x","--suffix1", required=False,
+                    help = "Suffix to add to overlapping column names")
+parser.add_argument("-y","--suffix2", required=False,
+                    help = "Suffix to add to overlapping column names")
 parser.add_argument("-s", "--delim", default="\t",
                     help="Delimiter to separate the columns of the output file, default : <TAB>")
 parser.add_argument("-k","--how", default= "inner",
@@ -48,12 +48,17 @@ ifile2 = get_filehandle(args.table2)
 df_ifile2 = pd.read_csv(ifile2, sep="\t")
 
 # Merge the two dataframes based on common/index column
-outfile_df = pd.merge(df_ifile1, df_ifile2,
-             left_on=args.key1,
-             right_on=args.key2,
-             how=args.how,
-             suffixes=(args.suffix1, args.suffix2))
-
+if args.suffix1 and args.suffix2:
+    outfile_df = pd.merge(df_ifile1, df_ifile2,
+                 left_on=args.key1,
+                 right_on=args.key2,
+                 how=args.how,
+                 suffixes=(args.suffix1, args.suffix2))
+else:
+    outfile_df = pd.merge(df_ifile1, df_ifile2,
+                 left_on=args.key1,
+                 right_on=args.key2,
+                 how=args.how)
 # Output of table1 with new column(s) incld. newcolumns from table2 to terminal
 delim = args.delim
 outfile_df.to_csv(sys.stdout, index=False, sep=delim)
