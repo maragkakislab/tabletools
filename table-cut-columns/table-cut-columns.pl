@@ -86,4 +86,5 @@ sub column_name_to_idx {
 	for (my $i=0; $i<@$names; $i++) {
 		return $i if $name eq $names->[$i];
 	}
+	return undef
 }
