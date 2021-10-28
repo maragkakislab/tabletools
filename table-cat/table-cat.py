@@ -27,6 +27,7 @@ for file in args.tables:
     infile = open_filehandle(file, args.gunzip)
     first_line = infile.readline()
     headerlines += [first_line.strip()]
+    infile.close()
 
 if not all(headers == headerlines[0] for headers in headerlines):
     print("File headers are not same")
@@ -38,3 +39,4 @@ else:
         next(infile)
         for line in infile:
             print(line.strip())
+        infile.close()
