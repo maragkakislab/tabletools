@@ -9,7 +9,7 @@ import argparse
 import pandas as pd
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("-i", "--table",
+parser.add_argument("-i", "--table", required=True,
                     help="Input table file. Reads from STDIN if '-'")
 parser.add_argument("-c", "--col-name", nargs='+',
                     help="Column name(s); selects column(s)")
@@ -30,11 +30,7 @@ ifile = get_filehandle(args.table)
 
 df = pd.read_csv(ifile, sep=args.sep)
 
-if not (args.table):
-    print("Please specify the table name or path")
-    sys.exit(1)
-else:
-    df_out = df[args.col_name]
+df_out = df[args.col_name]
 
 if (args.col_name_as):
     if len(args.col_name) != len(args.col_name_as):
