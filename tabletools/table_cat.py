@@ -1,24 +1,32 @@
-def main():
-    """
-    Script to concatenate multiple files (table-format) with common header,
-    also works for gzip files, with output in non-gzip table format.
-    """
-    import sys
-    import argparse
-    import gzip
+"""
+Concatenate table files that have the same header, similar to the Bash cat
+function.
+"""
 
-    parser = argparse.ArgumentParser()
+import sys
+import argparse
+import gzip
+
+
+def open_filehandle(file, gunzip=False):
+    if gunzip:
+        return gzip.open(file, "rt")
+    else:
+        return open(file)
+
+
+def parse_args(args):
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("tables", nargs='+',
-                        help="Input multiple table with same headers")
+                        help="Input table file(s)")
     parser.add_argument("-z", "--gunzip", action='store_true',
                         help="Decompress files using gzip")
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
-    def open_filehandle(file, gunzip=False):
-        if gunzip:
-            return gzip.open(file, "rt")
-        else:
-            return open(file)
+
+def main():
+
+    args = parse_args(sys.argv[1:])
 
     headerlines = []
     for file in args.tables:
