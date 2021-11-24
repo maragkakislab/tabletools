@@ -1,6 +1,6 @@
 """
 Concatenate table files that have the same header, similar to the Bash cat
-function.
+command.
 """
 
 import sys
