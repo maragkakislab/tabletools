@@ -24,25 +24,30 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-def main():
+def cat_tables(tables, gunzip, out=sys.stdout):
+    if len(tables) < 1:
+        return "No table provided"
 
+    header = tables[0].readline().strip()
+
+    # Loop on all tables to ensure that their header matches the first one.
+    for t in tables[1:]:
+        if t.readline().strip() != header:
+            return "File headers are not the same in all input files"
+
+    print(header, file=out)
+    for t in tables:
+        for line in t:
+            print(line.strip(), file=out)
+
+
+def main():
     args = parse_args(sys.argv[1:])
 
-    headerlines = []
-    for file in args.tables:
-        infile = open_filehandle(file, args.gunzip)
-        first_line = infile.readline()
-        headerlines += [first_line.strip()]
-        infile.close()
+    tables = []
+    for f in args.tables:
+        tables += [open_filehandle(f, args.gunzip)]
 
-    if not all(headers == headerlines[0] for headers in headerlines):
-        print("File headers are not same")
-        sys.exit(1)
-    else:
-        print(headerlines[0])
-        for file in args.tables:
-            infile = open_filehandle(file, args.gunzip)
-            next(infile)
-            for line in infile:
-                print(line.strip())
-            infile.close()
+    err = cat_tables(tables, args.gunzip)
+    if err is not None:
+        print(err, file=sys.stderr)
