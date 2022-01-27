@@ -63,8 +63,6 @@ def main():
     table = get_input_file_object(args.table)
     df = pd.read_csv(table, sep=args.sep)
 
-
-
     # Group and summarize the data.
     grouped = group_summarize(df, groupby, functions, summarize_cols)
 
