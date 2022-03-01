@@ -1,4 +1,6 @@
 import unittest
+import pandas as pd
+from io import StringIO
 from tabletools import table_paste_col
 
 class TestTablePasteCol(unittest.TestCase):
@@ -16,18 +18,11 @@ class TestTablePasteCol(unittest.TestCase):
         self.assertFalse(parser.at_end)
         
     def test_add_col(self):
-        parser = table_paste_col.parse_args(['--table', 'foo', '--col-name', 'bar', '--col-value', 'baz', '--at-end'])
-        # table = table_paste_col.get_input_file_object(parser.table) #
-        # doesn't work bc there's no foo
-        # table_paste_col.add_col(table, parser.sep, parser.colname, parser.colvalue, parser.at_end)
-        # split line and check that last element of line is bar
-        # how do we get this line bc add_col doesn't return it
-        # self.assertEqual(name, 'bar')
-        self.assertTrue(parser.at_end)
+        parser = table_paste_col.parse_args(['--table', 'file1', '--col-name', 'foo', '--col-value', 'bar', '--at-end'])
+        file1 = StringIO("A\tB\tC\nD\tE\tF\nG\tH\tI")
+        out = table_paste_col.add_col(file1, parser.separator, parser.col_name, parser.col_value, parser.at_end)
+        expected = StringIO("A\tB\tC\tfoo\nD\tE\tF\tbar\nG\tH\tI\tbar")
+        self.assertEqual(out, expected)
+        # expected = pd.DataFrame([['D', 'E', 'F', 'bar'], ['G', 'H', 'I', 'bar']], columns=['A', 'B', 'C', 'foo'])#, sep=parser.separator)
+        # pd.testing.assert_frame_equal(df, expected)
 
-        # parser = table_paste_col.parse_args(['--table', 'foo', '--col-name', 'bar', '--col-value', 'baz'])
-        # table_paste_col.add_col(parser.table, parser.sep, parser.colname,
-        # parser.colvalue, parser.at_end)
-        # # split line and check that first element of line is bar
-        # self.assertEqual(val, 'baz')
-    #
