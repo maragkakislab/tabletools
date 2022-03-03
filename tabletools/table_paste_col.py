@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import argparse
 
@@ -15,20 +16,20 @@ def parse_args(args):
     parser.add_argument("--at-end", action="store_true", help="inserts new column as the right most one.")
     return parser.parse_args(args)
 
-def add_col(table, sep, colname, colvalue, at_end):
+def add_col(table, sep, colname, colvalue, at_end, out=sys.stdout):
     i = 0
     for line in table:
         line = line.rstrip('\n')
         if i==0:
             if at_end:
-                print(line + sep + colname)
+                print(line + sep + colname, file=out)
             else:
-                print(colname + sep + line)
+                print(colname + sep + line, file=out)
         else:
             if at_end:
-                print(line + sep + colvalue)
+                print(line + sep + colvalue, file=out)
             else:
-                print(colvalue + sep + line)
+                print(colvalue + sep + line, file=out)
         i += 1
     return 
 
@@ -37,9 +38,10 @@ def main():
     Add a column containing a constant value to a table. Header assumed.
     """
     args = parse_args(sys.argv[1:])
-    # print(sys.argv[1:])
-    # print(args)
     table = get_input_file_object(args.table)
     add_col(table, args.separator, args.col_name, args.col_value, args.at_end)
     return
+
+if __name__ == "__main__":
+    main()
 
