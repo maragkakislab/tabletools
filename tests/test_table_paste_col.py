@@ -20,24 +20,18 @@ class TestTablePasteCol(unittest.TestCase):
         self.assertFalse(parser.at_end)
         
     def test_add_col(self):
-        parser = table_paste_col.parse_args(['--table', 'table',
-            '--col-name', 'foo', '--col-value', 'bar'])
         table = StringIO("A\tB\tC\nD\tE\tF\nG\tH\tI\n")
         expected = "foo\tA\tB\tC\nbar\tD\tE\tF\nbar\tG\tH\tI\n"       
         out = StringIO()
-        table_paste_col.add_col(table, parser.separator, parser.col_name, 
-                parser.col_value, parser.at_end, out)
+        table_paste_col.add_col(table, "\t", "foo", "bar", False, out)
         out.seek(0)
         self.assertEqual(out.read(), expected)
 
     def test_add_col_at_end(self):
-        parser = table_paste_col.parse_args(['--table', 'table',
-            '--col-name', 'foo', '--col-value', 'bar', '--at-end'])
         table = StringIO("A\tB\tC\nD\tE\tF\nG\tH\tI\n")
         expected = "A\tB\tC\tfoo\nD\tE\tF\tbar\nG\tH\tI\tbar\n"       
         out = StringIO()
-        table_paste_col.add_col(table, parser.separator, parser.col_name, 
-                parser.col_value, parser.at_end, out)
+        table_paste_col.add_col(table, "\t", "foo", "bar", True, out)
         out.seek(0)
         self.assertEqual(out.read(), expected)
 

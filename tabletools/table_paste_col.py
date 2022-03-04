@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+"""
+Add a column containing a constant value to a table. Header assumed.
+"""
 import sys
 import argparse
 
@@ -34,9 +36,7 @@ def add_col(table, sep, colname, colvalue, at_end, out=sys.stdout):
     return 
 
 def main():
-    """
-    Add a column containing a constant value to a table. Header assumed.
-    """
+
     args = parse_args(sys.argv[1:])
     table = get_input_file_object(args.table)
     add_col(table, args.separator, args.col_name, args.col_value, args.at_end)
