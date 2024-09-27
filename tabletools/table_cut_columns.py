@@ -5,7 +5,7 @@ import pandas as pd
 
 def main():
     """
-    "Cut selected columns from table. Assumes that the input file has a
+    "Keep selected columns from table. Assumes that the input file has a
     header line with column names"
     """
 
@@ -13,7 +13,7 @@ def main():
     parser.add_argument("-i", "--table", required=True,
                         help="Input table file. Reads from STDIN if '-'")
     parser.add_argument("-c", "--col-name", nargs='+',
-                        help="Column name(s); selects column(s)")
+                        help="Column name(s); selects column(s) to keep")
     parser.add_argument("-o", "--col-name-as", nargs='+', required=False,
                         help="Optional output column name. Equal times and same order as col-name")
     parser.add_argument("-d", "--sep", default="\t",
