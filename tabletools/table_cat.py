@@ -51,3 +51,4 @@ def main():
     err = cat_tables(tables, args.gunzip)
     if err is not None:
         print(err, file=sys.stderr)
+        sys.exit(1)
