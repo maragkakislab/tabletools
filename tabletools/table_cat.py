@@ -28,17 +28,17 @@ def cat_tables(tables, gunzip, out=sys.stdout):
     if len(tables) < 1:
         return "No table provided"
 
-    header = tables[0].readline().strip()
+    header = tables[0].readline().strip('\n\r')
 
     # Loop on all tables to ensure that their header matches the first one.
     for t in tables[1:]:
-        if t.readline().strip() != header:
+        if t.readline().strip('\n\r') != header:
             return "File headers are not the same in all input files"
 
     print(header, file=out)
     for t in tables:
         for line in t:
-            print(line.strip(), file=out)
+            print(line.strip('\n\r'), file=out)
 
 
 def main():

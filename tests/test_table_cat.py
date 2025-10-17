@@ -19,29 +19,42 @@ class TestTableCat(unittest.TestCase):
         self.assertFalse(parser.gunzip)
 
     def test_cat_tables(self):
-        tables = [
-                io.StringIO('A\tB\n0\t0\n0\t0\n'),
-                io.StringIO('A\tB\n1\t1\n1\t1\n')]
-        expected = 'A\tB\n0\t0\n0\t0\n1\t1\n1\t1\n'
+        tests = [
+                {
+                    'name': 'Simple',
+                    'input': [
+                        io.StringIO('A\tB\n0\t0\n0\t0\n'),
+                        io.StringIO('A\tB\n1\t1\n1\t1\n')],
+                    'expected': 'A\tB\n0\t0\n0\t0\n1\t1\n1\t1\n',
+                    'err': None,
+                    'gunzip': False,
+                },
+                {
+                    'name': 'Trailing tab',
+                    'input': [
+                        io.StringIO('\tA\tB\n0\t0\n0\t0\n'),
+                        io.StringIO('\tA\tB\n1\t1\n1\t1\n')],
+                    'expected': '\tA\tB\n0\t0\n0\t0\n1\t1\n1\t1\n',
+                    'err': None,
+                    'gunzip': False,
+                },
+                {
+                    'name': 'Bad headers',
+                    'input': [
+                        io.StringIO('A\tB\n0\t0\n0\t0\n'),
+                        io.StringIO('A\tC\n1\t1\n1\t1\n')],
+                    'expected': '',
+                    'err': 'File headers are not the same in all input files',
+                    'gunzip': False,
+                },
+        ]
 
-        out = io.StringIO()
-        err = table_cat.cat_tables(tables, False, out)
-        out.seek(0)
-        self.assertTrue(err is None)
-        self.assertEqual(out.read(), expected)
-
-        tables_bad_headers = [
-                io.StringIO('A\tB\n0\t0\n0\t0\n'),
-                io.StringIO('A\tC\n1\t1\n1\t1\n')]
-        expected = ''
-
-        out = io.StringIO()
-        err = table_cat.cat_tables(tables_bad_headers, False, out)
-        out.seek(0)
-        self.assertTrue(err is not None)
-        self.assertEqual(out.read(), expected)
-
-        # TODO: Test gzipped input
+        for t in tests:
+            out = io.StringIO()
+            err = table_cat.cat_tables(t['input'], t['gunzip'], out)
+            out.seek(0)
+            self.assertEqual(err, t['err'], msg=t['name'])
+            self.assertEqual(out.read(), t['expected'], msg=t['name'])
 
 
 if __name__ == '__main__':
