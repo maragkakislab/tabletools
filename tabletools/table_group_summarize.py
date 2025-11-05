@@ -34,6 +34,8 @@ def parse_args(args):
                         help="Pandas function/s to summarize columns e.g. mean")
     parser.add_argument("-s", "--sep", default='\t',
                         help="Column separator (default: <TAB>)")
+    parser.add_argument("-n", "--nativecols", action='store_true',
+                       help="Summarized column names will not change. Only valid when single functions are used")
     return parser.parse_args(args)
 
 
@@ -45,8 +47,14 @@ def group_summarize(df, groupby, functions, summarize_cols):
     grouped = df.groupby(groupby).agg(summarize_dict)
     newcols = []
     for col in summarize_cols:
-        for f in functions:
-            newcols.append(col+'_'+f)
+        if args.nativecols == False:
+            for f in functions:
+                newcols.append(col+'_'+f)
+        elif args.nativecols == True:
+            if len(functions) > 1:
+                raise ValueError("If more than one function is specified column names must be changed")
+            else:
+                newcols.append(col)
     grouped.columns = newcols
     grouped = grouped.reset_index()
     return(grouped)
@@ -58,7 +66,6 @@ def main():
     groupby = args.groupby
     functions = args.func
     summarize_cols = args.summarize
-
     # Read the data.
     table = get_input_file_object(args.table)
     df = pd.read_csv(table, sep=args.sep)
