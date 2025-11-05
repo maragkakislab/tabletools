@@ -66,7 +66,6 @@ def main():
     groupby = args.groupby
     functions = args.func
     summarize_cols = args.summarize
-    no_sep =  args.no_sep
     # Read the data.
     table = get_input_file_object(args.table)
     df = pd.read_csv(table, sep=args.sep)
