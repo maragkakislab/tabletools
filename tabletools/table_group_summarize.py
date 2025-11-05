@@ -34,7 +34,7 @@ def parse_args(args):
                         help="Pandas function/s to summarize columns e.g. mean")
     parser.add_argument("-s", "--sep", default='\t',
                         help="Column separator (default: <TAB>)")
-    parser.add_argument("-n", "--no_sep", action='store true',
+    parser.add_argument("-n", "--no_sep", action='store_true',
                        help="turn off function appending")
     return parser.parse_args(args)
 
