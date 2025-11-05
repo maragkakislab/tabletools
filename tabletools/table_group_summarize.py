@@ -34,6 +34,8 @@ def parse_args(args):
                         help="Pandas function/s to summarize columns e.g. mean")
     parser.add_argument("-s", "--sep", default='\t',
                         help="Column separator (default: <TAB>)")
+    parser.add_argument("-n", "--no_sep", action='store true',
+                       help="turn off function appending")
     return parser.parse_args(args)
 
 
@@ -45,8 +47,11 @@ def group_summarize(df, groupby, functions, summarize_cols):
     grouped = df.groupby(groupby).agg(summarize_dict)
     newcols = []
     for col in summarize_cols:
-        for f in functions:
-            newcols.append(col+'_'+f)
+        if args.no_sep == FALSE:
+            for f in functions:
+                newcols.append(col+'_'+f)
+        else:
+            newcols.append(col)
     grouped.columns = newcols
     grouped = grouped.reset_index()
     return(grouped)
@@ -58,7 +63,7 @@ def main():
     groupby = args.groupby
     functions = args.func
     summarize_cols = args.summarize
-
+    no_sep =  args.no_sep
     # Read the data.
     table = get_input_file_object(args.table)
     df = pd.read_csv(table, sep=args.sep)
