@@ -34,6 +34,21 @@ class TestGroupSummarize(unittest.TestCase):
                     ),
                 },
                 {
+                    'name': 'Simple_nativecols',
+                    'input': pd.DataFrame(
+                        [[1, 1], [1, 2], [2, 3], [2, 4], [2, 5], [3, 6]],
+                        columns=['id', 'column']
+                    ),
+                    'groupby': ["id"],
+                    'functions': ['mean'],
+                    'summarize_cols': ['column'],
+                    'nativecols': True,
+                    'expected': pd.DataFrame(
+                        [[1, 1.5], [2, 4.0], [3, 6.]],
+                        columns=['id', 'column']
+                    ),
+                },
+                {
                     'name': 'MultiFunc',
                     'input': pd.DataFrame(
                         [[2, 3], [2, 4], [2, 8]],
