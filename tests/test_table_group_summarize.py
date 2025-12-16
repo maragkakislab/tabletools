@@ -17,6 +17,7 @@ class TestGroupSummarize(unittest.TestCase):
         self.assertEqual(parser.groupby, ['foo', 'bar'])
         self.assertEqual(parser.summarize, ['col1', 'col2'])
         self.assertEqual(parser.func, ['mean', 'median'])
+        self.assertEqual(parser.nativecols, True)
 
     def test_group_summarize(self):
         tests = [
@@ -111,7 +112,8 @@ class TestGroupSummarize(unittest.TestCase):
         for t in tests:
             df = table_group_summarize.group_summarize(
                     t['input'], t['groupby'], t['functions'],
-                    t['summarize_cols'],)
+                    t['summarize_cols'],
+                    nativecols=t.get('nativecols', False))
             pd_testing.assert_frame_equal(df, t['expected'], obj=t['name'])
 
 
