@@ -11,7 +11,8 @@ class TestGroupSummarize(unittest.TestCase):
                 ['--table', 'foo',
                  '--groupby', 'foo', 'bar',
                  '--summarize', 'col1', 'col2',
-                 '--func', 'mean', 'median'])
+                 '--func', 'mean', 'median',
+                '--nativecols',True,False])
         self.assertEqual(parser.table, 'foo')
         self.assertEqual(parser.groupby, ['foo', 'bar'])
         self.assertEqual(parser.summarize, ['col1', 'col2'])
