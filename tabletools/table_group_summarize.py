@@ -72,7 +72,7 @@ def main():
     df = pd.read_csv(table, sep=args.sep)
 
     # Group and summarize the data.
-    grouped = group_summarize(df, groupby, functions, summarize_cols)
+    grouped = group_summarize(df, groupby, functions, summarize_cols,nativecols)
 
     # Output grouped dataset.
     grouped.to_csv(sys.stdout, sep=args.sep, index=False)
