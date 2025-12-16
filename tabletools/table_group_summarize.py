@@ -39,7 +39,7 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-def group_summarize(df, groupby, functions, summarize_cols):
+def group_summarize(df, groupby, functions, summarize_cols, nativecols = False):
     # Group and summarize the data.
     summarize_dict = {}
     for col in summarize_cols:
@@ -47,10 +47,10 @@ def group_summarize(df, groupby, functions, summarize_cols):
     grouped = df.groupby(groupby).agg(summarize_dict)
     newcols = []
     for col in summarize_cols:
-        if args.nativecols == False:
+        if nativecols == False:
             for f in functions:
                 newcols.append(col+'_'+f)
-        elif args.nativecols == True:
+        elif nativecols == True:
             if len(functions) > 1:
                 raise ValueError("If more than one function is specified column names must be changed")
             else:
@@ -66,6 +66,7 @@ def main():
     groupby = args.groupby
     functions = args.func
     summarize_cols = args.summarize
+    natviecols = args.nativecols
     # Read the data.
     table = get_input_file_object(args.table)
     df = pd.read_csv(table, sep=args.sep)
