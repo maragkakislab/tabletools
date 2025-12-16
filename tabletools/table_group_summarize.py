@@ -39,7 +39,7 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-def group_summarize(df, groupby, functions, summarize_cols, nativecols = False):
+def group_summarize(df, groupby, functions, summarize_cols, nativecols=False):
     # Group and summarize the data.
     summarize_dict = {}
     for col in summarize_cols:
@@ -59,6 +59,7 @@ def group_summarize(df, groupby, functions, summarize_cols, nativecols = False):
     grouped = grouped.reset_index()
     return(grouped)
 
+
 def main():
     args = parse_args(sys.argv[1:])
 
@@ -67,12 +68,14 @@ def main():
     functions = args.func
     summarize_cols = args.summarize
     nativecols = args.nativecols
+
     # Read the data.
     table = get_input_file_object(args.table)
     df = pd.read_csv(table, sep=args.sep)
 
     # Group and summarize the data.
-    grouped = group_summarize(df, groupby, functions, summarize_cols,nativecols)
+    grouped = group_summarize(df, groupby, functions, summarize_cols, 
+                              nativecols=nativecols)
 
     # Output grouped dataset.
     grouped.to_csv(sys.stdout, sep=args.sep, index=False)
